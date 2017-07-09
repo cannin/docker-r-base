@@ -52,7 +52,7 @@ RUN dpkg -i pandoc-1.19.2-1-amd64.deb
 #  r-base-html=${R_BASE_VERSION}*
 
 # Install R from source
-RUN apt-get install gfortran build-essential libreadline6 libreadline6-dev xorg-dev
+RUN apt-get -y install gfortran build-essential libreadline6 libreadline6-dev xorg-dev
 RUN wget http://cran.r-project.org/src/base/R-3/R-3.3.2.tar.gz
 RUN tar -xzf R-3.3.2.tar.gz
 RUN cd R-3.3.2; ./configure --enable-R-shlib # --prefix=...; make; make install
