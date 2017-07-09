@@ -14,7 +14,11 @@ RUN add-apt-repository -y ppa:openjdk-r/ppa
 RUN apt-get -y update && apt-get -y upgrade
 
 # Install basic commands
-RUN apt-get -y install links nano htop git
+RUN apt-get -y install links nano htop git wget
+
+# Install pandoc for knitr
+RUN wget https://github.com/jgm/pandoc/releases/download/1.19.2/pandoc-1.19.2-1-amd64.deb
+RUN dpkg -i pandoc-1.19.2-1-amd64.deb
 
 ENV R_BASE_VERSION 3.3.2-1trusty0
 
