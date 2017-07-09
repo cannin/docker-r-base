@@ -25,6 +25,7 @@ RUN apt-get -y install openjdk-8-jdk
 ## For XML
 RUN apt-get -y install libxml2-dev
 ## For pandoc for knitr
+RUN apt-get -y install libgmp10
 RUN wget https://github.com/jgm/pandoc/releases/download/1.19.2/pandoc-1.19.2-1-amd64.deb
 RUN dpkg -i pandoc-1.19.2-1-amd64.deb
 
