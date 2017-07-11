@@ -38,15 +38,6 @@ RUN apt-get -y install links nano htop git wget
 #  r-base-core=${R_BASE_VERSION}* \
 #  r-base-html=${R_BASE_VERSION}*
 
-# Install R from source
-RUN apt-get -y build-dep r-base
-RUN wget http://cran.r-project.org/src/base/R-3/R-3.3.2.tar.gz
-RUN tar -xzf R-3.3.2.tar.gz
-RUN cd R-3.3.2; ./configure --prefix=/usr/local --enable-R-shlib; make; make install
-
-#RUN echo 'options(repos = c(CRAN = "https://cran.rstudio.com/"), download.file.method = "libcurl")' >> /etc/R/Rprofile.site
-#RUN echo 'source("/etc/R/Rprofile.site")' >> /etc/littler.r
-
 # Install software needed for common R libraries
 ## For RCurl
 RUN apt-get -y install libcurl4-openssl-dev
@@ -59,6 +50,15 @@ RUN apt-get -y install libxml2-dev
 RUN apt-get -y install libgmp10
 RUN wget https://github.com/jgm/pandoc/releases/download/1.19.2/pandoc-1.19.2-1-amd64.deb
 RUN dpkg -i pandoc-1.19.2-1-amd64.deb
+
+# Install R from source
+RUN apt-get -y build-dep r-base
+RUN wget http://cran.r-project.org/src/base/R-3/R-3.3.2.tar.gz
+RUN tar -xzf R-3.3.2.tar.gz
+RUN cd R-3.3.2; ./configure --prefix=/usr/local --enable-R-shlib; make; make install
+
+#RUN echo 'options(repos = c(CRAN = "https://cran.rstudio.com/"), download.file.method = "libcurl")' >> /etc/R/Rprofile.site
+#RUN echo 'source("/etc/R/Rprofile.site")' >> /etc/littler.r
 
 ##### R: COMMON PACKAGES
 # To let R find Java
