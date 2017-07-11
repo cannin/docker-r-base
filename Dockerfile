@@ -16,19 +16,6 @@ RUN apt-get -y update && apt-get -y upgrade
 # Install basic commands
 RUN apt-get -y install links nano htop git wget
 
-# Install software needed for common R libraries
-## For RCurl
-RUN apt-get -y install libcurl4-openssl-dev
-## For rJava
-RUN apt-get -y install libpcre++-dev
-RUN apt-get -y install openjdk-8-jdk
-## For XML
-RUN apt-get -y install libxml2-dev
-## For pandoc for knitr
-RUN apt-get -y install libgmp10
-RUN wget https://github.com/jgm/pandoc/releases/download/1.19.2/pandoc-1.19.2-1-amd64.deb
-RUN dpkg -i pandoc-1.19.2-1-amd64.deb
-
 # Install R using apt-get
 #ENV R_BASE_VERSION 3.3.2-1trusty0
 
@@ -60,6 +47,19 @@ RUN cd R-3.3.2; ./configure --prefix=/usr/local --enable-R-shlib; make; make ins
 #RUN echo 'options(repos = c(CRAN = "https://cran.rstudio.com/"), download.file.method = "libcurl")' >> /etc/R/Rprofile.site
 #RUN echo 'source("/etc/R/Rprofile.site")' >> /etc/littler.r
 
+# Install software needed for common R libraries
+## For RCurl
+RUN apt-get -y install libcurl4-openssl-dev
+## For rJava
+RUN apt-get -y install libpcre++-dev
+RUN apt-get -y install openjdk-8-jdk
+## For XML
+RUN apt-get -y install libxml2-dev
+## For pandoc for knitr
+RUN apt-get -y install libgmp10
+RUN wget https://github.com/jgm/pandoc/releases/download/1.19.2/pandoc-1.19.2-1-amd64.deb
+RUN dpkg -i pandoc-1.19.2-1-amd64.deb
+
 ##### R: COMMON PACKAGES
 # To let R find Java
 RUN R CMD javareconf
@@ -68,3 +68,5 @@ COPY r-requirements.txt /
 COPY installPackages.R /
 COPY runInstallPackages.R /
 RUN R -e 'source("runInstallPackages.R")'
+
+# FIXME: shiny, simpleRCache, rCharts
