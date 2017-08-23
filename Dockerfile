@@ -1,4 +1,4 @@
-FROM ubuntu:14.04.4
+FROM ubuntu:16.04
 MAINTAINER cannin
 
 ##### UBUNTU
@@ -53,9 +53,9 @@ RUN dpkg -i pandoc-1.19.2-1-amd64.deb
 
 # Install R from source
 RUN apt-get -y build-dep r-base
-RUN wget http://cran.r-project.org/src/base/R-3/R-3.3.2.tar.gz
-RUN tar -xzf R-3.3.2.tar.gz
-RUN cd R-3.3.2; ./configure --prefix=/usr/local --enable-R-shlib; make; make install
+RUN wget http://cran.r-project.org/src/base/R-3/R-3.4.1.tar.gz
+RUN tar -xzf R-3.4.1.tar.gz
+RUN cd R-3.4.1; ./configure --prefix=/usr/local --enable-R-shlib; make; make install
 
 #RUN echo 'options(repos = c(CRAN = "https://cran.rstudio.com/"), download.file.method = "libcurl")' >> /etc/R/Rprofile.site
 #RUN echo 'source("/etc/R/Rprofile.site")' >> /etc/littler.r
