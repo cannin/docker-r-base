@@ -40,7 +40,7 @@ RUN apt-get -y install links nano htop git wget
 
 # Install software needed for common R libraries
 ## For RCurl
-RUN apt-get -y install libcurl4-openssl-dev
+RUN apt-get -y install libcurl4-openssl-dev libssl-dev 
 ## For rJava
 RUN apt-get -y install libpcre++-dev
 RUN apt-get -y install openjdk-8-jdk
