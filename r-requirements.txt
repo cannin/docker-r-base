@@ -105,6 +105,7 @@ rstudioapi
 RUnit
 S4Vectors
 scales
+shiny
 snow
 sourcetools
 sqldf

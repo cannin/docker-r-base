@@ -1,6 +1,9 @@
 FROM ubuntu:16.04
 MAINTAINER cannin
 
+# No prompts
+ENV DEBIAN_FRONTEND noninteractive
+
 ##### UBUNTU
 # Update Ubuntu and add extra repositories
 RUN apt-get -y update
@@ -16,7 +19,23 @@ RUN apt-get -y update && apt-get -y upgrade
 # Install basic commands
 RUN apt-get -y install links nano htop git wget
 
-# Install R using apt-get
+# Install software needed for common R libraries
+## For RCurl
+RUN apt-get -y install libcurl4-openssl-dev libssl-dev
+## For rJava
+RUN apt-get -y install libpcre++-dev
+RUN apt-get -y install openjdk-8-jdk
+## For XML
+RUN apt-get -y install libxml2-dev
+## For pandoc for knitr
+RUN apt-get -y install libgmp10
+RUN wget https://github.com/jgm/pandoc/releases/download/1.19.2/pandoc-1.19.2-1-amd64.deb
+RUN dpkg -i pandoc-1.19.2-1-amd64.deb
+
+# Install R (Basic)
+#RUN apt-get install -y r-base
+
+# Install R to a specific Ubuntu available version (Older)
 #ENV R_BASE_VERSION 3.3.2-1trusty0
 
 ## Necessary for getting a specific R version (get oldest working packages by manual date comparison) and set main repository
@@ -38,26 +57,12 @@ RUN apt-get -y install links nano htop git wget
 #  r-base-core=${R_BASE_VERSION}* \
 #  r-base-html=${R_BASE_VERSION}*
 
-# Install software needed for common R libraries
-## For RCurl
-RUN apt-get -y install libcurl4-openssl-dev libssl-dev 
-## For rJava
-RUN apt-get -y install libpcre++-dev
-RUN apt-get -y install openjdk-8-jdk
-## For XML
-RUN apt-get -y install libxml2-dev
-## For pandoc for knitr
-RUN apt-get -y install libgmp10
-RUN wget https://github.com/jgm/pandoc/releases/download/1.19.2/pandoc-1.19.2-1-amd64.deb
-RUN dpkg -i pandoc-1.19.2-1-amd64.deb
-
-# Install R from source
-RUN apt-get -y build-dep r-base
-RUN wget http://cran.r-project.org/src/base/R-3/R-3.4.1.tar.gz
-RUN tar -xzf R-3.4.1.tar.gz
-RUN cd R-3.4.1; ./configure --prefix=/usr/local --enable-R-shlib; make; make install
-
-#RUN echo 'options(repos = c(CRAN = "https://cran.rstudio.com/"), download.file.method = "libcurl")' >> /etc/R/Rprofile.site
+# Install R (Source)
+#RUN apt-get -y build-dep r-base
+#RUN wget http://cran.r-project.org/src/base/R-3/R-3.4.1.tar.gz
+#RUN tar -xzf R-3.4.1.tar.gz
+#RUN cd R-3.4.1; ./configure --prefix=/usr/local --enable-R-shlib; make; make install
+#RUN echo 'options(repos = "http://cran.rstudio.com/", download.file.method = "libcurl")' >> /etc/R/Rprofile.site
 #RUN echo 'source("/etc/R/Rprofile.site")' >> /etc/littler.r
 
 ##### R: COMMON PACKAGES
@@ -65,8 +70,7 @@ RUN cd R-3.4.1; ./configure --prefix=/usr/local --enable-R-shlib; make; make ins
 RUN R CMD javareconf
 
 COPY r-requirements.txt /
-COPY installPackages.R /
 COPY runInstallPackages.R /
 RUN R -e 'source("runInstallPackages.R")'
 
-# FIXME: shiny, simpleRCache, rCharts
+# FIXME: simpleRCache, rCharts
