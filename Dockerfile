@@ -33,7 +33,7 @@ RUN wget https://github.com/jgm/pandoc/releases/download/1.19.2/pandoc-1.19.2-1-
 RUN dpkg -i pandoc-1.19.2-1-amd64.deb
 
 # Install R (Basic)
-#RUN apt-get install -y r-base
+RUN apt-get install -y r-base
 
 # Install R to a specific Ubuntu available version (Older)
 #ENV R_BASE_VERSION 3.3.2-1trusty0
