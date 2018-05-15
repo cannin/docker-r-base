@@ -121,5 +121,6 @@ viridis
 whisker
 withr
 XML
+xml2
 xtable
 yaml
