@@ -34,7 +34,6 @@ flexmix
 foreach
 formatR
 Formula
-fpc
 gdata
 getopt
 ggplot2

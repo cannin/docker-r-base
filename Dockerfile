@@ -1,76 +1,147 @@
-FROM ubuntu:16.04
-MAINTAINER cannin
+FROM debian:9.4
 
-# No prompts
-ENV DEBIAN_FRONTEND noninteractive
-
-##### UBUNTU
-# Update Ubuntu and add extra repositories
-RUN apt-get -y update
-RUN apt-get -y install software-properties-common
-RUN apt-get -y install apt-transport-https
-
-RUN echo 'deb https://cran.rstudio.com/bin/linux/ubuntu trusty/' >> /etc/apt/sources.list
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
-RUN add-apt-repository -y ppa:openjdk-r/ppa
-
-RUN apt-get -y update && apt-get -y upgrade
-
-# Install basic commands
-RUN apt-get -y install links nano htop git wget
-
-# Install software needed for common R libraries
-## For RCurl
-RUN apt-get -y install libcurl4-openssl-dev libssl-dev
-## For rJava
-RUN apt-get -y install libpcre++-dev
-RUN apt-get -y install openjdk-8-jdk
-## For XML
-RUN apt-get -y install libxml2-dev
-## For pandoc for knitr
-RUN apt-get -y install libgmp10
-RUN wget https://github.com/jgm/pandoc/releases/download/1.19.2/pandoc-1.19.2-1-amd64.deb
-RUN dpkg -i pandoc-1.19.2-1-amd64.deb
-
-# Install R (Basic)
-RUN apt-get install -y r-base
-
-# Install R to a specific Ubuntu available version (Older)
-#ENV R_BASE_VERSION 3.3.2-1trusty0
-
-## Necessary for getting a specific R version (get oldest working packages by manual date comparison) and set main repository
-#RUN apt-cache policy r-cran-matrix
-#RUN apt-get install -y --no-install-recommends \
-#  littler \
-#  r-cran-littler \
-#  r-cran-matrix=1.2-4-1trusty0 \
-#  r-cran-codetools=0.2-14-1~ubuntu14.04.1~ppa1 \
-#  r-cran-survival=2.38-3-1trusty0 \
-#  r-cran-nlme=3.1.123-1trusty0 \
-#  r-cran-mgcv=1.8-7-1trusty0 \
-#  r-cran-kernsmooth=2.23-15-1trusty0 \
-#  r-cran-cluster=2.0.3-1trusty0 \
-#  r-base=${R_BASE_VERSION}* \
-#  r-base-dev=${R_BASE_VERSION}* \
-#  r-recommended=${R_BASE_VERSION}* \
-#  r-doc-html=${R_BASE_VERSION}* \
-#  r-base-core=${R_BASE_VERSION}* \
-#  r-base-html=${R_BASE_VERSION}*
-
-# Install R (Source)
-#RUN apt-get -y build-dep r-base
-#RUN wget http://cran.r-project.org/src/base/R-3/R-3.4.1.tar.gz
-#RUN tar -xzf R-3.4.1.tar.gz
-#RUN cd R-3.4.1; ./configure --prefix=/usr/local --enable-R-shlib; make; make install
-#RUN echo 'options(repos = "http://cran.rstudio.com/", download.file.method = "libcurl")' >> /etc/R/Rprofile.site
-#RUN echo 'source("/etc/R/Rprofile.site")' >> /etc/littler.r
-
-##### R: COMMON PACKAGES
-# To let R find Java
-RUN R CMD javareconf
+LABEL org.label-schema.license="LGPL-3.0" \
+      org.label-schema.vcs-url="https://TBA" \
+      org.label-schema.vendor="TBA" \
+      maintainer="Augustin Luna <TBA>"
 
 COPY r-requirements.txt /
-COPY runInstallPackages.R /
-RUN R -e 'source("runInstallPackages.R")'
 
-# FIXME: simpleRCache, rCharts
+ARG R_VERSION
+ARG BUILD_DATE
+ENV BUILD_DATE ${BUILD_DATE:-2018-03-15}
+ENV R_VERSION=${R_VERSION:-3.4.3} \
+    LC_ALL=en_US.UTF-8 \
+    LANG=en_US.UTF-8 \
+    TERM=xterm
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    bash-completion \
+    ca-certificates \
+    file \
+    fonts-texgyre \
+    g++ \
+    gfortran \
+    git \
+    gsfonts \
+    htop \
+    libblas-dev \
+    libbz2-1.0 \
+    libcurl3 \
+    libicu57 \
+    libjpeg62-turbo \
+    libopenblas-dev \
+    libpangocairo-1.0-0 \
+    libpcre3 \
+    libpng16-16 \
+    libreadline7 \
+    libtiff5 \
+    liblzma5 \
+    links \
+    locales \
+    make \
+    nano \
+    unzip \
+    wget \
+    zip \
+    zlib1g \
+  && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
+  && locale-gen en_US.utf8 \
+  && /usr/sbin/update-locale LANG=en_US.UTF-8 \
+  && BUILDDEPS="curl \
+    default-jdk \
+    libbz2-dev \
+    libcairo2-dev \
+    libcurl4-openssl-dev \
+    libpango1.0-dev \
+    libjpeg-dev \
+    libicu-dev \
+    libpcre3-dev \
+    libpng-dev \
+    libreadline-dev \
+    libssl-dev \
+    libtiff5-dev \
+    liblzma-dev \
+    libx11-dev \
+    libxml2-dev \
+    libxt-dev \
+    perl \
+    tcl8.6-dev \
+    tk8.6-dev \
+    texinfo \
+    texlive-extra-utils \
+    texlive-fonts-recommended \
+    texlive-fonts-extra \
+    texlive-latex-recommended \
+    x11proto-core-dev \
+    xauth \
+    xfonts-base \
+    xvfb \
+    zlib1g-dev" \
+  && apt-get install -y --no-install-recommends $BUILDDEPS \
+  && cd tmp/ \
+  ## Download source code
+  && curl -O https://cran.r-project.org/src/base/R-3/R-${R_VERSION}.tar.gz \
+  ## Extract source code
+  && tar -xf R-${R_VERSION}.tar.gz \
+  && cd R-${R_VERSION} \
+  ## Set compiler flags
+  && R_PAPERSIZE=letter \
+    R_BATCHSAVE="--no-save --no-restore" \
+    R_BROWSER=xdg-open \
+    PAGER=/usr/bin/pager \
+    PERL=/usr/bin/perl \
+    R_UNZIPCMD=/usr/bin/unzip \
+    R_ZIPCMD=/usr/bin/zip \
+    R_PRINTCMD=/usr/bin/lpr \
+    LIBnn=lib \
+    AWK=/usr/bin/awk \
+    CFLAGS="-g -O2 -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g" \
+    CXXFLAGS="-g -O2 -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g" \
+  ## Configure options
+  ./configure --enable-R-shlib \
+               --enable-memory-profiling \
+               --with-readline \
+               --with-blas \
+               --with-tcltk \
+               --disable-nls \
+               --without-recommended-packages \
+  ## Build and install
+  && make \
+  && make install \
+  ## Add a default CRAN mirror
+  && echo "options(repos = c(CRAN = 'https://cran.rstudio.com/'), download.file.method = 'libcurl')" >> /usr/local/lib/R/etc/Rprofile.site \
+  ## Add a library directory (for user-installed packages)
+  && mkdir -p /usr/local/lib/R/site-library \
+  && chown root:staff /usr/local/lib/R/site-library \
+  && chmod g+wx /usr/local/lib/R/site-library \
+  ## Fix library path
+  && echo "R_LIBS_USER='/usr/local/lib/R/site-library'" >> /usr/local/lib/R/etc/Renviron \
+  && echo "R_LIBS=\${R_LIBS-'/usr/local/lib/R/site-library:/usr/local/lib/R/library:/usr/lib/R/library'}" >> /usr/local/lib/R/etc/Renviron
+
+## Install packages from date-locked MRAN snapshot of CRAN
+RUN [ -z "$BUILD_DATE" ] && BUILD_DATE=$(TZ="America/Los_Angeles" date -I) || true \
+  && MRAN=https://mran.microsoft.com/snapshot/${BUILD_DATE} \
+  && echo MRAN=$MRAN >> /etc/environment \
+  && export MRAN=$MRAN \
+  && echo "options(repos = c(CRAN='$MRAN'), download.file.method = 'libcurl')" >> /usr/local/lib/R/etc/Rprofile.site \
+  ## Use littler installation scripts
+  && Rscript -e "install.packages(c('littler', 'docopt', 'devtools', 'stringr'), repo = '$MRAN')" \
+  && ln -s /usr/local/lib/R/site-library/littler/examples/install2.r /usr/local/bin/install2.r \
+  && ln -s /usr/local/lib/R/site-library/littler/examples/installGithub.r /usr/local/bin/installGithub.r \
+  && ln -s /usr/local/lib/R/site-library/littler/bin/r /usr/local/bin/r
+
+## Install additional dependencies
+RUN export $(cat /etc/environment) \
+  && Rscript -e "options(repos = c(CRAN='$MRAN'), download.file.method = 'libcurl'); source('https://gist.githubusercontent.com/cannin/6b8c68e7db19c4902459/raw/installPackages.R'); installPackages(file='/r-requirements.txt', repos='$MRAN')"
+
+## Clean up from R source install
+RUN cd / \
+  && rm -rf /tmp/* \
+  && apt-get remove --purge -y $BUILDDEPS \
+  && apt-get autoremove -y \
+  && apt-get autoclean -y \
+  && rm -rf /var/lib/apt/lists/*
+
+CMD ["R"]
